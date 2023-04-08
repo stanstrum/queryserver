@@ -1,0 +1,28 @@
+{
+  "name": "queryserver4",
+  "version": "4.0.0",
+  "description": "The Typescript rewrite of QueryServer3 :)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stanstrum/queryServer4.git"
+  },
+  "author": "stanstrum",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stanstrum/queryServer4/issues"
+  },
+  "homepage": "https://github.com/stanstrum/queryServer4#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.3"
+  },
+  "dependencies": {
+    "tslib": "^2.5.0"
+  }
+}
