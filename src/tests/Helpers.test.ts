@@ -2,7 +2,7 @@ import {
   AggregateError,
   merge, variadicMerge,
   auto
-} from "."
+} from "../helpers"
 
 describe("AggregateError", () => {
   const messages = [

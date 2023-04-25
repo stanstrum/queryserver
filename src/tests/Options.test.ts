@@ -1,4 +1,4 @@
-import { Options } from ".";
+import { Options } from "../Options";
 
 describe("processTimeout", () => {
   describe("returns", () => {

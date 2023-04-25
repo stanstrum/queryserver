@@ -1,5 +1,5 @@
-import PacketTool, { BasePacketizer } from "."
-import { DataType } from "./DataType";
+import PacketTool, { BasePacketizer } from "../Packets/PacketTool"
+import { DataType } from "../Packets/PacketTool/DataType";
 
 class DummyPacketizer implements BasePacketizer {
   constructor() {}
@@ -22,6 +22,8 @@ describe("PacketTool", () => {
       dummyPacketizer
     );
 
-    pt.serialize({ bytes: })
+    const serialized = pt.serialize({ bytes: Buffer.from([0xde, 0xad, 0xbe, 0xef]) });
+
+    expect(serialized).toStrictEqual(Buffer.from([0xde, 0xad, 0xbe, 0xef]));
   });
 });
