@@ -65,10 +65,8 @@ export function merge<U extends Record<any, any>, V extends Record<any, any>>(sr
 }
 
 /** @link https://stackoverflow.com/a/50375286/6496600 */
-export type UnionToIntersection<U> =
+type UnionToIntersection<U> =
   (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
-
-export type Defamiliarize<T> = T extends infer O ? O : never;
 
 /** @note This is sketchy to the tenth degree */
 export function variadicMerge<T extends Array<Record<any, any>>>(...objs: T) {

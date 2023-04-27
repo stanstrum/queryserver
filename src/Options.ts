@@ -1,8 +1,12 @@
+import { z } from "zod";
+
 type QueryOptions = "no" | "infer" | "yes";
 
 export interface IOptions {
   /**
    * Timeout for connection queries in millisec.
+   *
+   * Min: `0`
    *
    * Default: `10_000`
    */
@@ -12,6 +16,8 @@ export interface IOptions {
    * Port number to query the target server at. If omitted or
    * `null`, the port will be automatically inferred by the
    * queriers.
+   *
+   * Min: `1`, max: `65535`
    *
    * Default: `null`
    */
@@ -23,8 +29,8 @@ export interface IOptions {
    * method and at which ports to do so based on the `port`
    * option.
    *
-   * The query protocol is typically available on ports
-   * 25565 and 25575.
+   * The query protocol is typically available on 25575, as
+   * well as Java and Bedrock ports.
    *
    * Default: `"infer"`
    */
@@ -35,7 +41,7 @@ export interface IOptions {
    * method and at which ports to do so based on the `port`
    * option.
    *
-   * The Query protocol typically uses ports 25565 and 25575.
+   * The Bedrock protocol typically uses ports 19132.
    *
    * Default: `"infer"`
    */
@@ -71,22 +77,6 @@ export interface IOptions {
    */
   coalesceCrossplay?: boolean;
 };
-
-function validateInteger(
-  num: any,
-  min?: number, max?: number
-): num is number {
-  if (!Number.isInteger(num))
-    return false;
-
-  if (typeof min !== "undefined" && num < min)
-    return false;
-
-  if (typeof max !== "undefined" && num > max)
-    return false;
-
-  return true;
-}
 
 export class Options implements Required<IOptions> {
   /* Defaults */
@@ -135,41 +125,47 @@ export class Options implements Required<IOptions> {
     this.coalesceCrossplay = options?.coalesceCrossplay ?? Options.DEFAULT_COALESCE_CROSSPLAY;
   }
 
-  static processTimeout(timeout?: number) {
-    if (validateInteger(timeout, 0))
-      return timeout;
+  static #timeoutSchema = z.number().int().gte(0);
+  static processTimeout(timeout?: number): number {
+    const parsed = this.#timeoutSchema.safeParse(timeout);
 
-    if (typeof timeout === "number")
-      throw new Error("Invalid timeout length -- must be a whole number");
+    if (parsed.success)
+      return parsed.data;
 
-    return Options.DEFAULT_TIMEOUT;
+    if (typeof timeout === "undefined")
+      return Options.DEFAULT_TIMEOUT;
+
+    throw new Error("Invalid timeout length -- must be a whole number");
   }
 
-  static processPort(port?: number | null) {
-    if (validateInteger(port, 1, 65535))
-      return port;
+  static #portSchema = z.number().int().gt(0).lte(65535);
+  static processPort(port?: number | null): number | null {
+    const parsed = this.#portSchema.safeParse(port)
 
-    if (typeof port === "number")
-      throw new Error("Invalid port number -- must be an integer between 0 and 65535");
+    if (parsed.success)
+      return parsed.data;
 
-    return Options.DEFAULT_PORT;
+    if (port === null || typeof port === "undefined")
+      return Options.DEFAULT_PORT;
+
+    throw new Error("Invalid port number -- must be an integer between 1 and 65535");
   }
 
-  static processQueryQuery(queryQuery?: QueryOptions) {
+  static processQueryQuery(queryQuery?: QueryOptions): QueryOptions {
     return queryQuery || Options.DEFAULT_QUERY_QUERY;
   }
 
-  static processQueryBedrock(queryBedrock?: QueryOptions) {
+  static processQueryBedrock(queryBedrock?: QueryOptions): QueryOptions {
     return queryBedrock || Options.DEFAULT_QUERY_BEDROCK;
   }
 
-  static processQueryJava(queryJava?: QueryOptions) {
+  static processQueryJava(queryJava?: QueryOptions): QueryOptions {
     return queryJava || Options.DEFAULT_QUERY_JAVA;
   }
 
-  static processHost(host: string) {
+  static processHost(host: string): readonly [host: string, port: number | null] {
     /* Deconstructing host:port format */
-    const [hostname, port, ...rest] = host.split(':');
+    const [hostname, port] = host.split(':', 2);
 
     const labels = hostname.split('.').filter(label => label.length > 0);
 
@@ -191,7 +187,7 @@ export class Options implements Required<IOptions> {
 
     const isValidPort = !port || portAsNumber === processedPort;
 
-    if (!isValidFormat || !isValidHostname || !isValidPort || rest.length)
+    if (!isValidFormat || !isValidHostname || !isValidPort)
       throw new Error("Invalid host format");
 
     return [hostname, processedPort] as const;
