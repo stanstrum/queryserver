@@ -1,4 +1,4 @@
-import queryServer from ".."
+import queryServer from "..";
 
 describe("queryServer", () => {
   test.todo("shit");

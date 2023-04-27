@@ -1,9 +1,6 @@
-import PacketTool, { BasePacketizer } from "../Packets/PacketTool"
-import { DataType } from "../Packets/PacketTool/DataType";
+import PacketTool, { BasePacketizer, DataType } from "../PacketTool";
 
 class DummyPacketizer implements BasePacketizer {
-  constructor() {}
-
   packetize(bufs: Buffer[]): Buffer {
     return Buffer.concat(bufs);
   }

@@ -1,4 +1,4 @@
-import { BasePacketizer } from "./PacketTool";
+import { BasePacketizer } from "../PacketTool";
 
 export class JavaPacketizer implements BasePacketizer {
   constructor(
