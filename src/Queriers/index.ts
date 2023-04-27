@@ -1,4 +1,4 @@
-import { QuerierParameters  } from "@/Options";
+import { Options } from "@/Options";
 
 export type QueryData = {
   motd?: string,
@@ -14,8 +14,10 @@ export type QueryData = {
   latency: number,
 
   type: "Java" | "Bedrock" | "Unknown"
-}
+};
 
-export type Querier = {
-  async (...args: QuerierParameters): Promise<QueryData>;
-}
+export type Querier = (options: Options) => Promise<QueryData>;
+
+export { default as JavaQuerier } from "./Java";
+export { default as BedrockQuerier } from "./Bedrock";
+export { default as QueryQuerier } from "./Query";
