@@ -16,6 +16,7 @@ export class JavaPacketizer implements BasePacketizer {
 }
 
 export class BedrockPacketizer implements BasePacketizer {
+  static RAKNET_MAGIC = Buffer.from("00ffff00fefefefefdfdfdfd12345678", "hex");
   constructor(private packetID: number) {}
 
   packetize(bufs: Buffer[]): Buffer {
@@ -28,7 +29,8 @@ export class BedrockPacketizer implements BasePacketizer {
 }
 
 export class QueryPacketizer implements BasePacketizer {
-  constructor(private packetID: number) {}
+  static QUERY_MAGIC = Buffer.from("fefd", "hex");
+  constructor(private type: number) {}
 
   packetize(bufs: Buffer[]): Buffer {
     throw new Error("Not implemented");
