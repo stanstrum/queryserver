@@ -10,13 +10,11 @@ class DummyPacketizer implements BasePacketizer {
   }
 }
 
-const dummyPacketizer = new DummyPacketizer();
-
 describe("PacketTool", () => {
   it("encodes Bytes correctly", () => {
     const pt = new PacketTool(
       [["bytes", DataType.Bytes]],
-      dummyPacketizer
+      DummyPacketizer
     );
 
     const serialized = pt.serialize({ bytes: Buffer.from([0xde, 0xad, 0xbe, 0xef]) });

@@ -1,9 +1,10 @@
 import queryServer from "..";
+import { AggregateError } from "../helpers";
 
 describe("queryServer", () => {
-  test.todo("shit");
-
-  try {
-    queryServer("cedar", { port: 25565 });
-  } catch {}
+  it("throws an AggregateError on connection failure", () => {
+    expect(async () => {
+      await queryServer("fake-host.acme.com");
+    }).toThrow(AggregateError);
+  });
 });
