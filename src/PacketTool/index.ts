@@ -56,18 +56,51 @@ export default class PacketTool<
        */
       const value = values[name as keyof typeof values] as unknown;
 
+      /**
+       * due to the nature of some weaknesses in
+       * typescript's type inference system, i'm unable
+       * to DRY up the `parsedValue` type spiel.
+       *
+       * {@todo find better typing to mitigate this?}
+       */
       switch (type) {
+        case DataType.uint16be: {
+          const parsedValue = SchemaMap[type].parse(value);
+          const buf = Buffer.alloc(2);
+
+          buf.writeUInt16BE(parsedValue);
+
+          bufs.push(buf);
+        } break;
+
+        case DataType.uint32be: {
+          const parsedValue = SchemaMap[type].parse(value);
+          const buf = Buffer.alloc(2);
+
+          buf.writeUInt32BE(parsedValue);
+
+          bufs.push(buf);
+        } break;
+
         case DataType.Bytes: {
           const parsedValue = SchemaMap[type].parse(value);
 
           bufs.push(parsedValue);
-
         } break;
 
         case DataType.VarInt: {
           const parsedValue = SchemaMap[type].parse(value);
 
-          bufs.push()
+          bufs.push(varint.encode(parsedValue));
+        } break;
+
+        case DataType.VarIntString: {
+          const parsedValue = SchemaMap[type].parse(value);
+
+          bufs.push(
+            varint.encode(parsedValue.length),
+            Buffer.from(parsedValue)
+          );
         } break;
 
         default:
