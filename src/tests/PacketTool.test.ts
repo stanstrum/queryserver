@@ -1,13 +1,8 @@
 import PacketTool, { BasePacketizer, DataType } from "../PacketTool";
 
 class DummyPacketizer implements BasePacketizer {
-  packetize(bufs: Buffer[]): Buffer {
-    return Buffer.concat(bufs);
-  }
-
-  depacketize(buf: Buffer): Buffer {
-    return buf;
-  }
+  public packetize(bufs: Buffer[]): Buffer { return Buffer.concat(bufs); }
+  public depacketize(buf: Buffer): Buffer { return buf; }
 }
 
 describe("PacketTool", () => {
