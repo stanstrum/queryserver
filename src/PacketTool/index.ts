@@ -11,7 +11,15 @@ const EntrySchema = z.tuple([
 ]);
 
 export interface BasePacketizer {
+  /**
+   * "Wraps" data in protocol format with prefix-lengths, magic, etc.,
+   * and returns the assembled Buffer.
+   */
   packetize(bufs: Buffer[]): Buffer;
+  /**
+   * "Unwraps" data from protocol format and returns a
+   * [subarray](https://nodejs.org/api/buffer.html#bufsubarraystart-end).
+   */
   depacketize(buf: Buffer): Buffer;
 }
 
