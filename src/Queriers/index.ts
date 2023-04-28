@@ -16,7 +16,7 @@ export type QueryData = {
   type: "Java" | "Bedrock" | "Unknown"
 };
 
-export type Querier = (options: Options) => Promise<QueryData>;
+export type Querier = (timeout: Promise<never>, options: Options) => Promise<QueryData>;
 
 export { default as JavaQuerier } from "./Java";
 export { default as BedrockQuerier } from "./Bedrock";
