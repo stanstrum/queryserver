@@ -4,10 +4,10 @@
   "description": "The Typescript rewrite of QueryServer3 :)",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npm run build:types && npm run build:js",
-    "build:types": "tsc --emitDeclarationOnly",
+    "build": "npm run build:js",
+    "build:types": "tsc -p tsconfig-build.json --emitDeclarationOnly",
     "build:js": "babel src --out-dir dist --plugins @babel/plugin-proposal-numeric-separator --extensions \".ts,.tsx\" --source-maps inline",
-    "test": "jest"
+    "test": "jest --runInBand --expand"
   },
   "repository": {
     "type": "git",
