@@ -10,12 +10,13 @@
     [
       "babel-plugin-root-import",
       {
-        "rootPathSuffix": "./",
+        "rootPathSuffix": "./src",
         "rootPathPrefix": "@/"
       }
     ]
   ],
   "ignore": [
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "**/*.json"
   ]
 }
