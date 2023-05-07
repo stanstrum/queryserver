@@ -3,6 +3,7 @@
   "private": false,
   "version": "4.1.0",
   "description": "The Typescript rewrite of QueryServer3 :)",
+  "type": "commonjs",
   "main": "dist/index.js",
   "scripts": {
     "prepublish": "npm run build",
