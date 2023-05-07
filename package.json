@@ -1,16 +1,17 @@
 {
   "name": "queryserver",
   "private": false,
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "The Typescript rewrite of QueryServer3 :)",
   "type": "commonjs",
   "main": "dist/index.js",
   "scripts": {
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build",
     "build": "npm run build:types && npm run build:js",
     "build:types": "tsc -p tsconfig-build.json --emitDeclarationOnly",
     "build:js": "babel src -d dist --copy-files --extensions .ts,.tsx --source-maps=inline",
-    "test": "jest --runInBand --expand"
+    "test": "jest --runInBand --expand",
+    "clean": "rm -rdfv types dist .tsbuildinfo"
   },
   "repository": {
     "type": "git",
