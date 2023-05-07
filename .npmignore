@@ -1,9 +1,8 @@
-node_modules
+.changeset
 src
-.gitignore
-.npmignore
+
 babel.config.json
 jest.config.js
-package-lock.json
+
 tsconfig-build.json
 tsconfig.json
