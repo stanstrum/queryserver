@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-type QueryOptions = "no" | "infer" | "yes";
+type QueryOptions = "yes" | "infer" | "no";
 
 export interface IOptions {
   /**
@@ -24,43 +24,57 @@ export interface IOptions {
   port?: number | null;
 
   /**
-   * Behavior for querying via the Query protocol.
-   * `"infer"` automatically determines whether to use this
-   * method and at which ports to do so based on the `port`
-   * option.
-   *
-   * The query protocol is typically available on 25575, as
-   * well as Java and Bedrock ports.
-   *
-   * Default: `"infer"`
-   */
-  queryQuery?: QueryOptions;
-  /**
-   * Behavior for querying via the Bedrock protocol.
-   * `"infer"` automatically determines whether to use this
-   * method and at which ports to do so based on the `port`
-   * option.
-   *
-   * The Bedrock protocol typically uses ports 19132.
-   *
-   * Default: `"infer"`
-   */
-  queryBedrock?: QueryOptions;
-  /**
    * Behavior for querying via the Java protocol.
    * `"infer"` automatically determines whether to use this
    * method and at which ports to do so based on the `port`
    * option.
    *
-   * Java servers typically use port 25565.
+   * Java servers typically use port `25565`.
+   *
+   * `"infer"` will query Java if the provided port is not
+   * `19132`.  If a port is not provided, it will infer `25565`.
    *
    * Default: `"infer"`
    */
   queryJava?: QueryOptions;
 
   /**
+   * Behavior for querying via the Bedrock protocol.
+   * `"infer"` automatically determines whether to use this
+   * method and at which ports to do so based on the `port`
+   * option.
+   *
+   * Bedrock servers typically use port `19132`.
+   *
+   * `"infer"` will query Bedrock if the provided port is not
+   * `25565`.  If a port is not provided, it will infer `19132`.
+   *
+   * Default: `"infer"`
+   */
+  queryBedrock?: QueryOptions;
+
+  /**
+   * Behavior for querying via the Query protocol.
+   * `"infer"` automatically determines whether to use this
+   * method and at which ports to do so based on the `port`
+   * option.
+   *
+   * The query protocol is usually available on both Java
+   * and Bedrock ports if enabled (`enable-query=true`).
+   *
+   * `"yes"` and `"infer"` will use the provided port, or
+   * infer ports `25565` and `19132` if one is not provided.
+   *
+   * Default: `"infer"`
+   */
+  queryQuery?: QueryOptions;
+
+  /**
    * Whether to try all available methods, or to return data
    * on first response.
+   *
+   * Note that this will also prevent {@link coalesceCrossplay}
+   * from determining whether `"Crossplay"`.
    *
    * Default: `false`
    */
@@ -73,9 +87,36 @@ export interface IOptions {
    * If `false`, the first response (based on latency) will take
    * precedence.
    *
+   * Note that data from multiple servers will not be coalesced
+   * if {@link returnOnFirst} is enabled.
+   *
    * Default: `true`
    */
   coalesceCrossplay?: boolean;
+
+  /**
+   * Whether to check the hostname against Mojang's
+   * "[blocked servers](https://wiki.vg/Mojang_API#Blocked_Servers)"
+   * list.
+   *
+   * Default: `false`.
+   */
+  checkBlocked?: boolean;
+
+  /**
+   * Whether to check for a `_minecraft._tcp` SRV record
+   * before querying.
+   *
+   * Default: `true`.
+   */
+  useSRV?: boolean;
+
+  /**
+   * Whether to remove control codes and trim MOTD before returning.
+   *
+   * Default: `true`.
+   */
+  cleanMOTD?: boolean;
 };
 
 export class Options implements Required<IOptions> {
@@ -89,22 +130,28 @@ export class Options implements Required<IOptions> {
   static readonly DEFAULT_QUERY_JAVA    = "infer";
 
   static readonly DEFAULT_RETURN_ON_FIRST = false;
-
   static readonly DEFAULT_COALESCE_CROSSPLAY = true;
+  static readonly DEFAULT_CHECK_BLOCKED = false;
+  static readonly DEFAULT_USE_SRV = true;
+  static readonly DEFAULT_CLEAN_MOTD = true;
 
   /* Implementations */
-  public readonly timeout;
+  public timeout;
 
-  public readonly port;
+  public port;
 
-  public readonly queryQuery;
-  public readonly queryBedrock;
-  public readonly queryJava;
+  public queryQuery;
+  public queryBedrock;
+  public queryJava;
 
-  public readonly returnOnFirst;
-  public readonly coalesceCrossplay;
+  public returnOnFirst;
 
-  public readonly host: string;
+  public coalesceCrossplay;
+  public checkBlocked;
+  public useSRV;
+  public cleanMOTD;
+
+  public host: string;
 
   constructor(rawHost: string, options?: IOptions) {
     this.timeout       = Options.processTimeout(options?.timeout);
@@ -120,14 +167,16 @@ export class Options implements Required<IOptions> {
     this.host = host;
     this.port = overridePort ?? port;
 
-    this.returnOnFirst = options?.returnOnFirst ?? Options.DEFAULT_RETURN_ON_FIRST;
-
+    this.returnOnFirst     = options?.returnOnFirst     ?? Options.DEFAULT_RETURN_ON_FIRST;
     this.coalesceCrossplay = options?.coalesceCrossplay ?? Options.DEFAULT_COALESCE_CROSSPLAY;
+    this.checkBlocked      = options?.checkBlocked      ?? Options.DEFAULT_CHECK_BLOCKED;
+    this.useSRV            = options?.useSRV            ?? Options.DEFAULT_USE_SRV;
+    this.cleanMOTD         = options?.cleanMOTD         ?? Options.DEFAULT_CLEAN_MOTD;
   }
 
-  static #timeoutSchema = z.number().int().gte(0);
+  private static timeoutSchema = z.number().int().gte(0);
   static processTimeout(timeout?: number): number {
-    const parsed = this.#timeoutSchema.safeParse(timeout);
+    const parsed = this.timeoutSchema.safeParse(timeout);
 
     if (parsed.success)
       return parsed.data;
@@ -138,9 +187,9 @@ export class Options implements Required<IOptions> {
     throw new Error("Invalid timeout length -- must be a whole number");
   }
 
-  static #portSchema = z.number().int().gt(0).lte(65535);
+  private static portSchema = z.number().int().gt(0).lte(65535);
   static processPort(port?: number | null): number | null {
-    const parsed = this.#portSchema.safeParse(port)
+    const parsed = this.portSchema.safeParse(port)
 
     if (parsed.success)
       return parsed.data;

@@ -2,11 +2,9 @@ import { BasePacketizer } from "../PacketTool";
 import { DataType, SchemaMap } from "@/PacketTool/DataType";
 
 import varint from "varint";
-
 const VARINT_FLAG = 1 << 7;
 
 export class JavaPacketizer implements BasePacketizer {
-
   constructor(
     private packetID: number,
     /** zlib compression */
@@ -17,17 +15,19 @@ export class JavaPacketizer implements BasePacketizer {
   }
 
   public packetize(bufs: Buffer[]): Buffer {
-    const packetID = varint.encode<Buffer>(this.packetID);
+    const packetID = varint.encode(this.packetID);
     const length = packetID.length + bufs.reduce(
       (prev, curr) => prev + curr.length,
       0
     );
 
-    return Buffer.concat([
-      varint.encode(length),
-      packetID,
-      ...bufs
-    ]);
+    return Buffer.concat(
+      [
+        varint.encode(length),
+        packetID,
+        ...bufs
+      ].map(Buffer.from)
+    );
   }
 
   public depacketize(buf: Buffer): Buffer {
@@ -37,9 +37,9 @@ export class JavaPacketizer implements BasePacketizer {
       do offset++; while (buf[offset - 1] & VARINT_FLAG);
     };
 
-    const packetID = varint.decode(buf, offset);
-    seekVarInt();
     const length = varint.decode(buf, offset);
+    seekVarInt();
+    const packetID = varint.decode(buf, offset);
     seekVarInt();
 
     if (packetID !== this.packetID)
@@ -109,5 +109,15 @@ export class QueryPacketizer implements BasePacketizer {
       );
 
      return buf.subarray(1);
+  }
+}
+
+export class RawPacketizer implements BasePacketizer {
+  public packetize(bufs: Buffer[]) {
+    return Buffer.concat(bufs);
+  }
+
+  public depacketize(buf: Buffer) {
+    return buf;
   }
 }

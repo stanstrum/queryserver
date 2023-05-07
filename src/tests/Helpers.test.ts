@@ -1,7 +1,8 @@
 import {
   AggregateError,
   merge, variadicMerge,
-  auto
+  auto,
+  ConnectionTimeout
 } from "../helpers";
 
 describe("AggregateError", () => {
@@ -101,5 +102,34 @@ describe("auto", () => {
     for (; i < count; i++) expect(auto()).toBe(ctr + i);
 
     ctr += i;
+  });
+});
+
+describe("ConnectionTimeout", () => {
+  it("times out after time has elapsed", async () => {
+    // setup
+    jest.useFakeTimers();
+    jest.spyOn(global, "setTimeout");
+
+    // utils
+    const fn = jest.fn();
+    const timeout = 10_000;
+
+    // body
+    const ct = new ConnectionTimeout(timeout);
+    ct.on("timeout", fn);
+
+    // tests
+    expect(setTimeout).toHaveBeenCalledTimes(1);
+    expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), timeout);
+
+    expect(fn).not.toHaveBeenCalled();
+
+    jest.runAllTimers();
+
+    expect(fn).toHaveBeenCalled();
+
+    // cleanup
+    jest.useRealTimers();
   });
 });

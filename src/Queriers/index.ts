@@ -1,4 +1,5 @@
 import { Options } from "@/Options";
+import { ConnectionTimeout } from "@/helpers";
 
 export type QueryData = {
   motd?: string,
@@ -13,10 +14,19 @@ export type QueryData = {
   favicon?: string,
   latency: number,
 
-  type: "Java" | "Bedrock" | "Unknown"
+  type: "Java" | "Bedrock" | "Unknown",
+
+  debug: {
+    java?: boolean,
+    bedrock?: boolean,
+    query?: boolean,
+
+    protocol?: number,
+    protocolVersion?: string,
+  },
 };
 
-export type Querier = (timeout: Promise<never>, options: Options) => Promise<QueryData>;
+export type Querier = (options: Options, ct: ConnectionTimeout) => Promise<QueryData>;
 
 export { default as JavaQuerier } from "./Java";
 export { default as BedrockQuerier } from "./Bedrock";

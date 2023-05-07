@@ -11,18 +11,16 @@ export type FormatToObject<T extends PacketFormat> = {
     ? PacketName<T[K]>
     : never
   ]: TypeMap[PacketType<T[K]>];
-}
+} & {};
 
 type PruneNevers<T> = {
   [K in keyof T as [T[K]] extends [never] ? never : K]: PruneNevers<T[K]>;
 }
 
-type PartialIfEmptyObject<T> = [keyof T] extends [never]
-  ? Partial<T>
-  : T;
+type ToDeserializerOptions<T> = {} extends T ? [T?] : [T];
 
 export type FormatToDeserializerOptions<T extends PacketFormat> =
-  [PartialIfEmptyObject<
+  ToDeserializerOptions<
     PruneNevers<{
       [
         K in keyof T as
@@ -32,5 +30,5 @@ export type FormatToDeserializerOptions<T extends PacketFormat> =
       ]: PacketType<T[K]> extends keyof DeserializerOptions
         ? DeserializerOptions[PacketType<T[K]>]
         : never;
-    }>
-  >];
+    }> & {}
+  >;
