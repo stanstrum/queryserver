@@ -5,6 +5,7 @@
   "description": "The Typescript rewrite of QueryServer3 :)",
   "main": "dist/index.js",
   "scripts": {
+    "prepublish": "npm run build",
     "build": "npm run build:js",
     "build:types": "tsc -p tsconfig-build.json --emitDeclarationOnly",
     "build:js": "babel src -d dist --copy-files --extensions .ts,.tsx --source-maps=inline",
