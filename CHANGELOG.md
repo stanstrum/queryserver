@@ -1,5 +1,11 @@
 # queryserver
 
+## 4.1.2
+
+### Patch Changes
+
+- Add README to repo & distributed package
+
 ## 4.1.1
 
 ### Patch Changes
